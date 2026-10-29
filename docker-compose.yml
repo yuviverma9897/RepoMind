@@ -1,0 +1,22 @@
+# Optional: PostgreSQL 17 + pgvector for local development.
+#   POSTGRES_PASSWORD=choose-a-password docker compose up -d
+# Then set DATABASE_URL=postgresql://repomind:<that password>@localhost:5432/repomind in backend/.env.
+# The container's user is a superuser, so `alembic upgrade head` can enable pgvector itself.
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: repomind
+      POSTGRES_DB: repomind
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD before starting the database}
+    ports:
+      - "127.0.0.1:5432:5432"   # reachable from this machine only
+    volumes:
+      - repomind-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U repomind -d repomind"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  repomind-pgdata:
